@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="qanswer">
+   <resultMap type="QAnswerDto" id="QAnswerMap">
+      <result property="qbseq" column="QBSEQ" />
+      <result property="qaseq" column="QASEQ" />
+      <result property="qamemberid" column="QAMEMBERID" />
+      <result property="qacontent" column="QACONTENT" />
+      <result property="qadate" column="QADATE" />
+      <collection property="memberdto" resultMap="MemberMap"></collection>
+   </resultMap>
+   
+         <resultMap type="MemberDto" id="MemberMap">
+      <result property="memberid" column="MEMBERID" />
+      <result property="memberpw" column="MEMBERPW" />
+      <result property="name" column="NAME" />
+      <result property="email" column="EMAIL" />
+      <result property="filename" column="FILENAME" />
+   </resultMap>
+
+   <select id="qaselectList" parameterType="int"
+      resultMap="QAnswerMap">
+      SELECT *
+      FROM QANSWERBOARD A, MEMBER B
+      WHERE A.QAMEMBERID =B.MEMBERID AND A.QBSEQ=#{qbseq}
+      ORDER BY A.QASEQ DESC
+   </select>
+
+   <select id="qaselectOne" parameterType="int" resultMap="QAnswerMap">
+      SELECT *
+      FROM QANSWERBOARD
+      WHERE QASEQ = #{qaseq}
+   </select>
+
+
+   <insert id="qainsert" parameterType="QAnswerDto">
+      INSERT INTO QANSWERBOARD
+      VALUES(QASEQ.NEXTVAL, #{qbseq}, #{qamemberid}, #{qacontent}, SYSDATE)
+   </insert>
+
+
+   <update id="qaupdate" parameterType="QAnswerDto">
+      UPDATE QANSWERBOARD
+      SET
+      QACONTENT = #{qacontent}, QADATE = SYSDATE
+      WHERE QASEQ = #{qaseq}
+   </update>
+
+
+
+   <delete id="qadelete" parameterType="int">
+      DELETE FROM QANSWERBOARD
+      WHERE QASEQ = #{qaseq}
+   </delete>
+
+   <select id="selectmyqa" parameterType="String" resultType="int">
+      SELECT COUNT(*)
+      FROM QANSWERBOARD
+      WHERE QAMEMBERID = #{memberid}
+
+   </select>
+
+   <select id="inviteListq" parameterType="ChatlistDto"
+      resultMap="QAnswerMap">
+      SELECT DISTINCT QAMEMBERID FROM QANSWERBOARD
+      WHERE QBSEQ=#{chat_list_board_no} AND QAMEMBERID NOT IN ( SELECT
+      CHAT_USER_ID FROM CHAT_USER WHERE
+      CHAT_USER_CHAT_NO=(
+      SELECT CHAT_LIST_NO FROM CHAT_LIST
+      WHERE CHAT_LIST_BOARD_NO=#{chat_list_board_no} AND CHAT_LIST_BOARD_TYPE
+      =#{chat_list_board_type}))
+   </select>
+</mapper>  
+  
+  
+  

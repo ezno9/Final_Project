@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="member">
+
+   <resultMap type="MemberDto" id="MemberMap">
+      <result property="memberid" column="MEMBERID" />
+      <result property="memberpw" column="MEMBERPW" />
+      <result property="name" column="NAME" />
+      <result property="email" column="EMAIL" />
+      <result property="filename" column="FILENAME" />
+   </resultMap>
+
+   <select id="selectList" resultMap="MemberMap">
+      SELECT *
+      FROM MEMBER
+   </select>
+
+   <select id="selectOne" resultMap="MemberMap"
+      parameterType="MemberDto">
+      SELECT *
+      FROM MEMBER
+      WHERE MEMBERID = #{memberid} AND
+      MEMBERPW = #{memberpw}
+   </select>
+
+   <select id="selectOneRei" resultMap="MemberMap"
+      parameterType="MemberDto">
+      SELECT *
+      FROM MEMBER
+      WHERE MEMBERID = #{memberid}
+   </select>
+
+   <insert id="insert" parameterType="MemberDto">
+      INSERT INTO MEMBER
+      VALUES(#{memberid},#{memberpw},#{name},#{email},#{filename},NULL)
+   </insert>
+
+
+   <select id="idchk" resultMap="MemberMap"
+      parameterType="MemberDto">
+      SELECT *
+      FROM MEMBER
+      WHERE EMAIL = #{email} AND NAME =
+      #{name}
+   </select>
+
+   <select id="pwchk" resultMap="MemberMap"
+      parameterType="MemberDto">
+      SELECT *
+      FROM MEMBER
+      WHERE MEMBERID = #{memberid} AND
+      EMAIL = #{email}
+   </select>
+
+   <update id="pwchg" parameterType="MemberDto">
+      UPDATE MEMBER
+      SET
+      MEMBERPW=#{memberpw}
+      WHERE MEMBERID=#{memberid}
+   </update>
+
+
+   <select id="emailchk" parameterType="MemberDto"
+      resultMap="MemberMap">
+      SELECT *
+      FROM MEMBER
+      WHERE EMAIL = #{email}
+   </select>
+
+   <!-- 초대인원list 댓글인원으로 수정할꺼임 -->
+   <select id="inviteList" parameterType="ChatlistDto"
+      resultMap="MemberMap">
+      SELECT * FROM MEMBER
+      WHERE MEMBERID NOT IN ( SELECT
+      CHAT_USER_ID FROM CHAT_USER WHERE
+      CHAT_USER_CHAT_NO=(
+      SELECT
+      CHAT_LIST_NO FROM CHAT_LIST
+      WHERE
+      CHAT_LIST_BOARD_NO=#{chat_list_board_no} AND CHAT_LIST_BOARD_TYPE
+      =#{chat_list_board_type}))
+   </select>
+
+   <update id="updateInfo" parameterType="MemberDto">
+      UPDATE MEMBER
+      SET NAME =
+      #{name}, EMAIL = #{email}, FILENAME = #{filename}
+      WHERE MEMBERID =
+      #{memberid}
+   </update>
+
+   <delete id="delete" parameterType="String">
+      DELETE
+      FROM MEMBER
+      WHERE MEMBERID=#{memberid}
+   </delete>
+
+
+</mapper>  
+  
+  
+  

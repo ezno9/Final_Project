@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="chat">
+
+
+   <resultMap type="MemberDto" id="MemberMap">
+      <result property="memberid" column="MEMBERID" />
+      <result property="memberpw" column="MEMBERPW" />
+      <result property="name" column="NAME" />
+      <result property="email" column="EMAIL" />
+      <result property="filename" column="FILENAME" />
+   </resultMap>
+
+   <resultMap type="ChatlistDto" id="chatlistMap">
+      <result property="chat_list_no" column="CHAT_LIST_NO" />
+      <result property="chat_list_title" column="CHAT_LIST_TITLE" />
+      <result property="chat_list_created_at"
+         column="CHAT_LIST_CREATED_AT" />
+      <result property="chat_list_updated_at"
+         column="CHAT_LIST_UPDATED_AT" />
+      <result property="chat_list_board_no"
+         column="CHAT_LIST_BOARD_NO" />
+      <result property="chat_list_board_type"
+         column="CHAT_LIST_BOARD_TYPE" />
+         <result property="countmember"
+         column="COUNTMEMBER" />
+      <collection property="chatuserdto" resultMap="chatuserMap"></collection>
+      <collection property="chatmsgdto" resultMap="chatmsgMap"></collection>
+   </resultMap>
+
+   <resultMap type="ChatuserDto" id="chatuserMap">
+      <result property="chat_user_no" column="CHAT_USER_NO" />
+      <result property="chat_user_chat_no" column="CHAT_USER_CHAT_NO" />
+      <result property="chat_user_id" column="CHAT_USER_ID" />
+      <result property="chat_user_created_at"
+         column="CHAT_USER_CREATED_AT" />
+      <result property="chat_user_updated_at"
+         column="CHAT_USER_UPDATED_AT" />
+      <result property="chat_user_king_yn" column="CHAT_USER_KING_YN" />
+      <collection property="memberdto" resultMap="MemberMap"></collection>
+   </resultMap>
+
+   <resultMap type="ChatmsgDto" id="chatmsgMap">
+      <result property="chat_msg_no" column="CHAT_MSG_NO" />
+      <result property="chat_msg_user_id" column="CHAT_MSG_USER_ID" />
+      <result property="chat_msg_txt" column="CHAT_MSG_TXT" />
+      <result property="chat_msg_created_at"
+         column="CHAT_MSG_CREATED_AT" />
+      <result property="chat_msg_updated_at"
+         column="CHAT_MSG_UPDATED_AT" />
+      <result property="chat_msg_chat_no" column="CHAT_MSG_CHAT_NO" />
+   </resultMap>
+   <!-- 채팅방 생성 -->
+   <insert id="createroom" parameterType="ChatlistDto">
+      INSERT INTO
+      CHAT_LIST
+      VALUES(CHAT_LIST_SEQ.NEXTVAL,
+      #{chat_list_title},SYSDATE,NULL,
+      #{chat_list_board_no},#{chat_list_board_type})
+   </insert>
+
+
+   <!-- s(스터디) 채팅방찾기 -->
+   <select id="selectrooms" parameterType="int"
+      resultType="ChatlistDto">
+      SELECT * FROM CHAT_LIST
+      WHERE CHAT_LIST_BOARD_NO=
+      #{chat_list_board_no} AND CHAT_LIST_BOARD_TYPE = 'S'
+   </select>
+   <!-- q(질문) 채팅방 찾기 -->
+   <select id="selectroomq" parameterType="int"
+      resultType="ChatlistDto">
+      SELECT * FROM CHAT_LIST
+      WHERE CHAT_LIST_BOARD_NO=
+      #{chat_list_board_no} AND CHAT_LIST_BOARD_TYPE = 'Q'
+   </select>
+
+
+   <!-- 채팅방 삭제 -->
+   <delete id="deleteroom" parameterType="int">
+      DELETE FROM CHAT_LIST
+      WHERE CHAT_LIST_NO=#{chat_list_no}
+   </delete>
+
+   <!-- 채팅방 맴버 삭제 -->
+   <delete id="deleteMembers" parameterType="int">
+      DELETE FROM CHAT_USER
+      WHERE CHAT_USER_CHAT_NO = #{chat_list_no}
+   </delete>
+
+   <!-- 메세지 삭제 -->
+   <delete id="deleteMsgs" parameterType="int">
+      DELETE FROM CHAT_MSG
+      WHERE
+      CHAT_MSG_CHAT_NO = #{chat_list_no}
+   </delete>
+
+
+   <!-- 채팅방에 인원들 초대 -->
+   <insert id="inviteroom" parameterType="ChatuserDto">
+      INSERT INTO CHAT_USER
+      VALUES(CHAT_USER_SEQ.NEXTVAL,#{chat_user_chat_no},#{chat_user_id},SYSDATE,NULL,#{chat_user_king_yn})
+   </insert>
+
+   <!-- 나의 채팅방 목록 및 정보 -->
+   <select id="selectroombyid" parameterType="String"
+      resultMap="chatlistMap">
+SELECT A.CHAT_LIST_NO,A.CHAT_LIST_TITLE,A.CHAT_LIST_BOARD_TYPE,C.CHAT_MSG_TXT,A.CHAT_LIST_CREATED_AT,F.*
+FROM CHAT_LIST A,
+(SELECT F.CHAT_LIST_NO,F.CHAT_LIST_TITLE,G.CHAT_USER_ID
+FROM CHAT_LIST F,CHAT_USER G
+WHERE F.CHAT_LIST_NO = G.CHAT_USER_CHAT_NO AND G.CHAT_USER_ID=#{chat_user_id}) B,
+(SELECT D.CHAT_MSG_TXT,E.*
+FROM CHAT_MSG D, 
+(SELECT MAX(CHAT_MSG_NO) "MAXNO",CHAT_MSG_CHAT_NO
+FROM CHAT_MSG
+GROUP BY CHAT_MSG_CHAT_NO) E
+WHERE D.CHAT_MSG_NO =E."MAXNO") C,
+(SELECT CHAT_USER_CHAT_NO,COUNT(CHAT_USER_ID) "COUNTMEMBER"
+FROM CHAT_USER
+GROUP BY CHAT_USER_CHAT_NO) F
+WHERE  A.CHAT_LIST_NO=C.CHAT_MSG_CHAT_NO AND A.CHAT_LIST_NO = B.CHAT_LIST_NO AND A.CHAT_LIST_NO=F.CHAT_USER_CHAT_NO
+ORDER BY A.CHAT_LIST_CREATED_AT DESC
+   
+   
+   
+   </select>
+   
+      <select id="selectroombyidS" parameterType="String"
+      resultMap="chatlistMap">
+SELECT A.CHAT_LIST_NO,A.CHAT_LIST_TITLE,A.CHAT_LIST_BOARD_TYPE,C.CHAT_MSG_TXT,A.CHAT_LIST_CREATED_AT,F.*
+FROM CHAT_LIST A,
+(SELECT F.CHAT_LIST_NO,F.CHAT_LIST_TITLE,G.CHAT_USER_ID
+FROM CHAT_LIST F,CHAT_USER G
+WHERE F.CHAT_LIST_NO = G.CHAT_USER_CHAT_NO AND G.CHAT_USER_ID=#{chat_user_id}) B,
+(SELECT D.CHAT_MSG_TXT,E.*
+FROM CHAT_MSG D, 
+(SELECT MAX(CHAT_MSG_NO) "MAXNO",CHAT_MSG_CHAT_NO
+FROM CHAT_MSG
+GROUP BY CHAT_MSG_CHAT_NO) E
+WHERE D.CHAT_MSG_NO =E."MAXNO") C,
+(SELECT CHAT_USER_CHAT_NO,COUNT(CHAT_USER_ID) "COUNTMEMBER"
+FROM CHAT_USER
+GROUP BY CHAT_USER_CHAT_NO) F
+WHERE  A.CHAT_LIST_NO=C.CHAT_MSG_CHAT_NO AND A.CHAT_LIST_NO = B.CHAT_LIST_NO AND A.CHAT_LIST_NO=F.CHAT_USER_CHAT_NO AND A.CHAT_LIST_BOARD_TYPE='S'
+ORDER BY A.CHAT_LIST_CREATED_AT DESC
+   
+   
+   
+   </select>
+   
+   
+   <!-- 채팅내용 db로 전송 -->
+   <insert id="sendfordb" parameterType="ChatmsgDto">
+      INSERT INTO CHAT_MSG
+      VALUES(CHAT_MSG_SEQ.NEXTVAL, #{chat_msg_user_id}, #{chat_msg_txt},
+      SYSDATE,NULL,#{chat_msg_chat_no})
+   </insert>
+
+
+   <!-- 최신메세지 20개만 보이도록 -->
+   <select id="lastestMsgList" parameterType="int"
+      resultMap="chatmsgMap">
+      <![CDATA[
+      SELECT CHAT_MSG_USER_ID,CHAT_MSG_TXT,CHAT_MSG_CREATED_AT
+      FROM (SELECT CHAT_MSG_USER_ID, CHAT_MSG_TXT,
+      DECODE(TO_CHAR(CHAT_MSG_CREATED_AT,'YYYY/MM/DD'),TO_CHAR(SYSDATE,'YYYY/MM/DD'),
+      DECODE(TO_CHAR(CHAT_MSG_CREATED_AT,'am'),'오전',
+      TO_CHAR(CHAT_MSG_CREATED_AT,'"오전" HH24:MI | "오늘"'),
+      TO_CHAR(CHAT_MSG_CREATED_AT,'"오후" HH24:MI | "오늘"')
+      ),
+      DECODE(TO_CHAR(CHAT_MSG_CREATED_AT,'am'),'오전',
+      TO_CHAR(CHAT_MSG_CREATED_AT,'"오전" HH24:MI | YYYY/MM/DD'),
+      TO_CHAR(CHAT_MSG_CREATED_AT,'"오후" HH24:MI | YYYY/MM/DD')
+      )
+      ) AS CHAT_MSG_CREATED_AT
+      FROM CHAT_MSG A
+      WHERE CHAT_MSG_CHAT_NO=#{chat_msg_chat_no}
+      ORDER BY A.CHAT_MSG_CREATED_AT DESC
+      )
+      WHERE ROWNUM<=20
+      ]]>
+   </select>
+
+   <select id="getMemberList" parameterType="int"
+      resultMap="chatuserMap">
+      SELECT * FROM CHAT_USER A,MEMBER B
+      WHERE A.CHAT_USER_ID=B.MEMBERID AND CHAT_USER_CHAT_NO=#{chat_user_chat_no}
+   </select>
+
+   <delete id="exitRoom" parameterType="chatuserDto">
+      DELETE FROM CHAT_USER
+      WHERE CHAT_USER_CHAT_NO=#{chat_user_chat_no} AND
+      CHAT_USER_ID=#{chat_user_id}
+   </delete>
+
+
+   <select id="selectMyStudy" parameterType="String"
+      resultType="int">
+      SELECT COUNT(*)
+      FROM CHAT_USER A, CHAT_LIST B
+      WHERE A.CHAT_USER_CHAT_NO=B.CHAT_LIST_NO
+      AND A.CHAT_USER_ID= #{memberid}
+      AND B.CHAT_LIST_BOARD_TYPE='S'
+   </select>
+   
+   <select id="selectChatdetail" parameterType="int" resultType="ChatlistDto">
+      SELECT * FROM CHAT_LIST
+      WHERE CHAT_LIST_NO=#{chat_list_no}
+   
+   </select>
+   
+   <select id="selectKingId" parameterType="String" resultType="chatuserDto">
+      SELECT CHAT_USER_ID
+      FROM CHAT_USER
+      WHERE CHAT_USER_KING_YN='Y' AND CHAT_USER_ID = #{chat_user_id}
+   </select>
+
+   <select id="findMembers" parameterType="chatuserDto" resultMap="chatuserMap">
+      SELECT * 
+      FROM CHAT_USER
+      WHERE CHAT_USER_CHAT_NO = #{chat_user_chat_no}
+   </select>
+   
+   <select id="selectStudyListByKing" parameterType="String" resultMap="chatlistMap">
+   SELECT * 
+   FROM CHAT_LIST A, CHAT_USER B
+   WHERE A.CHAT_LIST_NO = B.CHAT_USER_CHAT_NO AND B.CHAT_USER_KING_YN='Y' AND B.CHAT_USER_ID=#{chat_user_id} AND A.CHAT_LIST_BOARD_TYPE='S'
+   </select>
+
+   <select id="studyListAll" parameterType="int" resultMap="chatuserMap">
+      SELECT * 
+      FROM CHAT_USER
+      WHERE CHAT_USER_CHAT_NO=#{chat_user_chat_no}
+   </select>
+   
+   <delete id="roomOut" parameterType="String">
+   DELETE FROM CHAT_USER
+   WHERE CHAT_USER_ID=#{chat_user_id}
+   </delete>
+
+
+</mapper>  
+  
+  
+  

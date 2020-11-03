@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="timer">
+	<resultMap type="TimerStartDto" id="timerStartMap">
+		<result property="startno" column="STARTNO" />
+		<result property="memberid" column="MEMBERID" />
+		<result property="start_t" column="START_T" />
+	</resultMap>
+
+	<resultMap type="TimerEndDto" id="timerEndMap">
+		<result property="endno" column="ENDNO" />
+		<result property="memberid" column="MEMBERID" />
+		<result property="end_t" column="END_T" />
+		<result property="today" column="TODAY" />
+	</resultMap>
+
+	<resultMap type="TimerSumDto" id="timerSumDto">
+		<result property="memberid" column="MEMBERID" />
+		<result property="total_t" column="TOTAL_T" />
+		<result property="today" column="TODAY" />
+	</resultMap>
+
+
+	<insert id="insertStart" parameterType="TimerStartDto">
+		INSERT INTO TIMERSTART
+		VALUES(STARTNO.NEXTVAL, #{memberid}, SYSDATE)
+	</insert>
+
+	<insert id="insertEnd" parameterType="TimerEndDto">
+		INSERT INTO TIMEREND
+		VALUES(ENDNO.NEXTVAL, #{memberid}, SYSDATE)
+	</insert>
+
+	<insert id="insertSum" parameterType="TimerSumDto">
+		MERGE INTO TIMERSUM T
+		USING (SELECT 
+					TO_CHAR(SUM(E.END_T - S.START_T)*24*60, '99999') TOTAL
+				FROM ( SELECT ROW_NUMBER() OVER(ORDER BY STARTNO) SR, START_T, MEMBERID
+						FROM TIMERSTART
+						WHERE MEMBERID = #{memberid} ) S, 
+					( SELECT ROW_NUMBER() OVER(ORDER BY ENDNO) ER, END_T, MEMBERID
+						FROM TIMEREND
+						WHERE MEMBERID = #{memberid} ) E
+				WHERE S.SR = E.ER
+							AND TO_CHAR(S.START_T, 'YY/MM/DD') = TO_CHAR(SYSDATE, 'YY/MM/DD') ) A
+		ON ( T.TODAY = TO_CHAR(SYSDATE, 'YY/MM/DD') AND T.MEMBERID = #{memberid} )
+		WHEN MATCHED THEN
+		UPDATE 
+		<set>
+		 	T.TOTAL_T = A.TOTAL
+		</set> 
+		WHEN NOT MATCHED THEN
+		INSERT (T.MEMBERID, T.TOTAL_T, T.TODAY)
+		VALUES (#{memberid}, A.TOTAL, TO_CHAR(SYSDATE, 'YY/MM/DD') )
+	</insert>
+
+	<select id="selectSumAll" parameterType="TimerSumDto"
+		resultType="TimerSumDto">
+		SELECT *
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid}
+	</select>
+
+	<select id="selectSumToday" parameterType="TimerSumDto"
+		resultType="TimerSumDto">
+		SELECT *
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid} AND TODAY = TO_CHAR(SYSDATE, 'YY/MM/DD')
+	</select>
+
+
+
+
+	<!-- 일주일치 -->
+	<select id="selectMon" parameterType="String"
+		resultType="TimerSumDto">
+		SELECT TOTAL_T
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid}
+		AND TODAY = TO_CHAR(TRUNC(SYSDATE, 'iw'))
+	</select>
+
+	<select id="selectTue" parameterType="String"
+		resultType="TimerSumDto">
+		SELECT TOTAL_T
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid}
+		AND TODAY = TO_CHAR(TRUNC(SYSDATE, 'iw')+1)
+	</select>
+
+	<select id="selectWed" parameterType="String"
+		resultType="TimerSumDto">
+		SELECT TOTAL_T
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid}
+		AND TODAY = TO_CHAR(TRUNC(SYSDATE, 'iw')+2)
+	</select>
+
+	<select id="selectThu" parameterType="String"
+		resultType="TimerSumDto">
+		SELECT TOTAL_T
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid}
+		AND TODAY = TO_CHAR(TRUNC(SYSDATE, 'iw')+3)
+	</select>
+
+	<select id="selectFri" parameterType="String"
+		resultType="TimerSumDto">
+		SELECT TOTAL_T
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid}
+		AND TODAY = TO_CHAR(TRUNC(SYSDATE, 'iw')+4)
+	</select>
+
+	<select id="selectSat" parameterType="String"
+		resultType="TimerSumDto">
+		SELECT TOTAL_T
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid}
+		AND TODAY = TO_CHAR(TRUNC(SYSDATE, 'iw')+5)
+	</select>
+
+	<select id="selectSun" parameterType="String"
+		resultType="TimerSumDto">
+		SELECT TOTAL_T
+		FROM TIMERSUM
+		WHERE MEMBERID = #{memberid}
+		AND TODAY = TO_CHAR(TRUNC(SYSDATE, 'd')+7)
+	</select>
+
+
+
+
+
+
+	<!-- 월별 -->
+	<select id="selectJan" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '01' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectFab" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '02' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectMar" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '03' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectApr" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '04' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectMay" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '05' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectJun" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '06' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectJul" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '07' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectAug" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '08' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectSep" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '09' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectOct" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '10' AND MEMBERID = #{memberid}
+	</select>
+
+	<select id="selectNov" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '11' AND MEMBERID = #{memberid}
+	</select>
+	
+	<select id="selectDec" parameterType="String" resultType="int">
+		SELECT SUM(TOTAL_T)
+		FROM TIMERSUM
+		WHERE SUBSTR(TODAY, 4, 2) = '12' AND MEMBERID = #{memberid}
+	</select>
+	
+
+
+</mapper>

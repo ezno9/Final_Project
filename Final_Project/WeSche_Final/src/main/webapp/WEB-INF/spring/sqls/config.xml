@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <settings>
+        <setting name="cacheEnabled" value="false" />
+        <setting name="jdbcTypeForNull" value="NULL" />
+    </settings>
+
+	<typeAliases>
+		<typeAlias type="com.edu.mvc.model.dto.CalendarDto" alias="CalendarDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.MemberDto" alias="MemberDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.QAnswerDto" alias="QAnswerDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.QBoardDto" alias="QBoardDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.RecruitAnswerDto" alias="RecruitAnswerDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.RecruitBoardDto" alias="RecruitBoardDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.TimerStartDto" alias="TimerStartDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.TimerEndDto" alias="TimerEndDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.TimerSumDto" alias="TimerSumDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.ChatlistDto" alias="ChatlistDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.ChatmsgDto" alias="ChatmsgDto"/>
+		<typeAlias type="com.edu.mvc.model.dto.ChatuserDto" alias="ChatuserDto"/>
+	</typeAliases>
+	
+	<!-- resource : src/main/resources와 연결 -->
+	<mappers>
+		<mapper resource="/mybatis/Calendar-mapper.xml" />
+		<mapper resource="/mybatis/Member-mapper.xml" />
+		<mapper resource="/mybatis/QAnswer-mapper.xml" />
+		<mapper resource="/mybatis/QBoard-mapper.xml" />
+		<mapper resource="/mybatis/RecruitAnswer-mapper.xml" />
+		<mapper resource="/mybatis/RecruitBoard-mapper.xml" />
+		<mapper resource="/mybatis/Timer-mapper.xml" />
+		<mapper resource="/mybatis/Chat-mapper.xml" />
+	</mappers>
+	
+	<!-- environment는 이미 applicationContext.xml에서 설정이 되어있기 때문에 따로 설정안함. -->
+	
+</configuration>  

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="recruitanswer">
+   <resultMap type="RecruitAnswerDto" id="recruitAnswerMap">
+      <result property="rbseq" column="RBSEQ" />
+      <result property="raseq" column="RASEQ" />
+      <result property="ramemberid" column="RAMEMBERID" />
+      <result property="racontent" column="RACONTENT" />
+      <result property="radate" column="RADATE" />
+      <collection property="memberdto" resultMap="MemberMap"></collection>
+   </resultMap>
+   
+         <resultMap type="MemberDto" id="MemberMap">
+      <result property="memberid" column="MEMBERID" />
+      <result property="memberpw" column="MEMBERPW" />
+      <result property="name" column="NAME" />
+      <result property="email" column="EMAIL" />
+      <result property="filename" column="FILENAME" />
+   </resultMap>
+
+   <select id="raselectList" parameterType="int"
+      resultMap="recruitAnswerMap">
+      SELECT *
+      FROM STUDYANSWERBOARD A, MEMBER B
+      WHERE A.RAMEMBERID=B.MEMBERID AND A.RBSEQ=#{rbseq}
+      ORDER BY
+      A.RASEQ DESC
+   </select>
+
+   <select id="raselectOne" resultType="RecruitAnswerDto">
+      SELECT *
+      FROM
+      STUDYANSWERBOARD
+      WHERE RASEQ = #{raseq}
+   </select>
+
+
+   <insert id="rainsert" parameterType="RecruitAnswerDto">
+      INSERT INTO STUDYANSWERBOARD
+      VALUES(RASEQ.NEXTVAL, #{rbseq}, #{ramemberid}, #{racontent}, SYSDATE)
+   </insert>
+
+   <update id="raupdate" parameterType="RecruitAnswerDto">
+      UPDATE STUDYANSWERBOARD
+      SET
+      RACONTENT = #{racontent}, RADATE = SYSDATE
+      WHERE RASEQ = #{raseq}
+   </update>
+
+
+   <delete id="radelete" parameterType="int">
+      DELETE FROM STUDYANSWERBOARD
+      WHERE RASEQ = #{raseq}
+   </delete>
+
+
+   <select id="selectmyra" parameterType="String" resultType="int">
+      SELECT COUNT(*) FROM STUDYANSWERBOARD
+      WHERE RAMEMBERID = #{memberid}
+   </select>
+
+   <select id="inviteLists" parameterType="ChatlistDto"
+      resultMap="recruitAnswerMap">
+      SELECT DISTINCT RAMEMBERID FROM STUDYANSWERBOARD
+      WHERE RBSEQ=#{chat_list_board_no} AND RAMEMBERID NOT IN ( SELECT
+      CHAT_USER_ID FROM CHAT_USER WHERE
+      CHAT_USER_CHAT_NO=(
+      SELECT CHAT_LIST_NO FROM CHAT_LIST
+      WHERE CHAT_LIST_BOARD_NO=#{chat_list_board_no} AND CHAT_LIST_BOARD_TYPE
+      =#{chat_list_board_type}))
+   </select>
+
+
+</mapper>  
+  
+  
+  

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="calendar">
+   <resultMap type="CalendarDto" id="calendarMap">
+      <result property="_id" column="ID" />
+      <result property="title" column="TITLE" />
+      <result property="start" column="STARTTIME" />
+      <result property="end" column="ENDTIME" />
+      <result property="description" column="DESCRIPTION" />
+      <result property="type" column="STYPE" />
+      <result property="username" column="MEMBERID" />
+      <result property="backgroundColor" column="BACKGROUNDCOLOR"/>
+      <result property="textColor" column="TEXTCOLOR" />
+      <result property="allDay" column="ALLDAY" />
+   </resultMap>
+   
+   <select id="selectList" resultMap="calendarMap">
+      SELECT *
+      FROM CALENDAR
+   </select>
+   
+   <insert id="insert" parameterType="calendarDto">
+      INSERT INTO
+      CALENDAR
+      VALUES(#{_id},#{title},#{start},#{end},#{description},#{type},#{username},#{backgroundColor},#{textColor},#{allDay})
+   </insert>
+   
+   <select id="selectCheck" resultMap="calendarMap" parameterType="calendarDto">
+      SELECT *
+      FROM CALENDAR
+      WHERE (STARTTIME >= #{start} AND #{end} >= ENDTIME) AND MEMBERID=#{username} 
+   </select>
+   
+   <update id="update" parameterType="calendarDto">
+      UPDATE CALENDAR
+      SET TITLE=#{title}, STARTTIME=#{start}, ENDTIME=#{end}, DESCRIPTION=#{description}, STYPE=#{type}, BACKGROUNDCOLOR=#{backgroundColor}
+      WHERE ID=#{_id} AND MEMBERID=#{username}
+   </update>
+   
+   <delete id="delete" parameterType="calendarDto">
+      DELETE
+      FROM CALENDAR
+      WHERE ID=#{_id} AND MEMBERID=#{username}
+   </delete>
+   
+   <update id="dropUpdate" parameterType="calendarDto">
+      UPDATE CALENDAR
+      SET STARTTIME=#{start}, ENDTIME=#{end}
+      WHERE ID=#{_id} AND MEMBERID=#{username}
+   </update>
+   
+   <select id="selectScheOne" parameterType="calendarDto" resultMap="calendarMap">
+   	SELECT * 
+   	FROM CALENDAR
+   	WHERE ID=#{_id} AND MEMBERID=#{username}
+   </select>
+   
+   
+</mapper>  
+  
+  
+  

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="qboard">
+   <resultMap type="QBoardDto" id="QBoardMap">
+      <result property="qbseq" column="QBSEQ" />
+      <result property="memberid" column="MEMBERID" />
+      <result property="title" column="TITLE" />
+      <result property="qbcount" column="QBCOUNT" />
+      <result property="qbtag" column="QBTAG" />
+      <result property="qbdate" column="QBDATE" />
+      <result property="qbcontent" column="QBCONTENT" />
+      <result property="qbfilename" column="QBFILENAME" />
+      <collection property="memberdto" resultMap="MemberMap"></collection>
+   </resultMap>
+   
+      <resultMap type="MemberDto" id="MemberMap">
+      <result property="memberid" column="MEMBERID" />
+      <result property="memberpw" column="MEMBERPW" />
+      <result property="name" column="NAME" />
+      <result property="email" column="EMAIL" />
+      <result property="filename" column="FILENAME" />
+   </resultMap>
+
+<!--    <select id="selectList" resultMap="QBoardMap">
+      SELECT *
+      FROM QBOARD
+      ORDER BY
+      QBSEQ DESC
+   </select> -->
+
+
+   <select id="selectList" resultMap="QBoardMap">
+           SELECT *
+           FROM (
+              SELECT QBSEQ, 
+                 MEMBERID, 
+                 TITLE, 
+                 QBCOUNT, 
+               QBTAG, 
+                 QBDATE, 
+                    QBCONTENT,
+                    QBFILENAME, 
+                 ROW_NUMBER() OVER(ORDER BY QBSEQ DESC) AS RNUM
+              FROM QBOARD
+              WHERE 1=1
+                 <include refid="search"></include>
+              ) NUM
+           ORDER BY QBSEQ DESC
+   </select>
+
+   <sql id="search">
+      <if test="searchType != null">
+         <if test="searchType == 't'.toString()">AND TITLE LIKE '%' || #{keyword} || '%'</if>
+         <if test="searchType == 'ta'.toString()">AND QBTAG LIKE '%' || #{keyword} || '%'</if>
+         <if test="searchType == 'c'.toString()">AND QBCONTENT LIKE '%' || #{keyword} || '%'</if>
+         <if test="searchType == 'w'.toString()">AND MEMBERID LIKE '%' || #{keyword} || '%'</if>
+         <if test="searchType == 'tc'.toString()">AND (TITLE LIKE '%' || #{keyword} || '%') or (QBCONTENT LIKE '%' || #{keyword} || '%')</if>
+      </if>
+   </sql>
+
+
+   <select id="selectOne" parameterType="int" resultMap="QBoardMap">
+      SELECT *
+      FROM QBOARD A,MEMBER B
+      WHERE A.MEMBERID=B.MEMBERID AND A.QBSEQ= #{qbseq}
+   </select>
+
+   <insert id="insert" parameterType="QBoardDto">
+      INSERT INTO QBOARD
+      VALUES(QBSEQ.NEXTVAL, #{memberid}, #{title}, #{qbcount}, #{qbtag},
+      SYSDATE, #{qbcontent}, #{qbfilename})
+   </insert>
+
+   <update id="update" parameterType="QBoardDto">
+      UPDATE QBOARD
+      SET
+      TITLE=#{title}, QBCONTENT=#{qbcontent}, QBTAG=#{qbtag}, QBDATE=SYSDATE, QBFILENAME=#{qbfilename}
+      WHERE QBSEQ = #{qbseq}
+   </update>
+
+   <delete id="delete" parameterType="int">
+      DELETE FROM QBOARD
+      WHERE QBSEQ
+      = #{qbseq}
+   </delete>
+
+   <update id="count" parameterType="int">
+      UPDATE QBOARD
+      SET
+      QBCOUNT=QBCOUNT+1
+      WHERE QBSEQ = #{qbseq}
+   </update>
+
+   <select id="myqaselect" parameterType="String" resultType="int">
+      SELECT COUNT(*)
+      FROM QBOARD
+      WHERE MEMBERID = #{memberid}
+   </select>
+
+
+
+</mapper>  
+  
+  
+  

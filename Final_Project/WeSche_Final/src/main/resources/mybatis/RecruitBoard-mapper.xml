@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="recruitboard">
+   <resultMap type="RecruitBoardDto" id="recruitBoardMap">
+      <result property="rbseq" column="RBSEQ" />
+      <result property="memberid" column="MEMBERID" />
+      <result property="title" column="TITLE" />
+      <result property="rbcount" column="RBCOUNT" />
+      <result property="tag" column="TAG" />
+      <result property="rbdate" column="RBDATE" />
+      <result property="rbcontent" column="RBCONTENT" />
+      <result property="grouping" column="GROUPING" />
+      <collection property="memberdto" resultMap="MemberMap"></collection>
+   </resultMap>
+   
+         <resultMap type="MemberDto" id="MemberMap">
+      <result property="memberid" column="MEMBERID" />
+      <result property="memberpw" column="MEMBERPW" />
+      <result property="name" column="NAME" />
+      <result property="email" column="EMAIL" />
+      <result property="filename" column="FILENAME" />
+   </resultMap>
+
+   <select id="selectList" resultMap="recruitBoardMap">
+           SELECT *
+           FROM (
+              SELECT RBSEQ, 
+                 MEMBERID, 
+                 TITLE, 
+                 RBCOUNT, 
+               TAG, 
+                 RBDATE, 
+                    RBCONTENT, 
+                 GROUPING,
+                 ROW_NUMBER() OVER(ORDER BY RBSEQ DESC) AS RNUM
+              FROM STUDYGROUP
+              WHERE 1=1
+                 <include refid="search"></include>
+              ) NUM
+           WHERE RNUM BETWEEN #{rowStart} AND #{rowEnd}
+           ORDER BY RBSEQ DESC
+   </select>
+   
+   
+   <select id="countBoardList" resultType="Integer">
+      SELECT count(RBSEQ)
+         FROM STUDYGROUP
+         WHERE 1=1 
+      <include refid="search"></include>
+         AND RBSEQ > 0
+   </select>
+   
+   <sql id="search">
+      <if test="searchType != null">
+         <if test="searchType == 't'.toString()">AND TITLE LIKE '%' || #{keyword} || '%'</if>
+         <if test="searchType == 'ta'.toString()">AND TAG LIKE '%' || #{keyword} || '%'</if>
+         <if test="searchType == 'c'.toString()">AND RBCONTENT LIKE '%' || #{keyword} || '%'</if>
+         <if test="searchType == 'w'.toString()">AND MEMBERID LIKE '%' || #{keyword} || '%'</if>
+         <if test="searchType == 'tc'.toString()">AND (TITLE LIKE '%' || #{keyword} || '%') or (RBCONTENT LIKE '%' || #{keyword} || '%')</if>
+      </if>
+   </sql>
+
+   <insert id="insert" parameterType="RecruitBoardDto">
+      INSERT INTO STUDYGROUP
+      VALUES(RBSEQ.NEXTVAL, #{memberid}, #{title}, #{rbcount}, #{tag},
+      SYSDATE, #{rbcontent}, #{grouping})
+   </insert>
+
+
+   <select id="selectOne" parameterType="int" resultMap="recruitBoardMap">
+      SELECT *
+      FROM STUDYGROUP A, MEMBER B
+      WHERE A.MEMBERID=B.MEMBERID AND A.RBSEQ=#{rbseq}
+   </select>
+
+
+   <update id="update" parameterType="RecruitBoardDto">
+      UPDATE STUDYGROUP
+      SET TITLE=#{title}, RBCONTENT=#{rbcontent}, TAG=#{tag},
+      RBDATE=SYSDATE
+      WHERE RBSEQ=#{rbseq}
+   </update>
+
+   <delete id="delete" parameterType="int">
+      DELETE FROM STUDYGROUP
+      WHERE
+      RBSEQ=#{rbseq}
+   </delete>
+
+   <update id="count" parameterType="int">
+      UPDATE STUDYGROUP
+      SET RBCOUNT=RBCOUNT+1
+      WHERE RBSEQ=#{rbseq}
+   </update>
+
+   <select id="selectMyS" parameterType="String" resultType="int">
+      SELECT
+      COUNT(*)
+      FROM STUDYGROUP
+      WHERE MEMBERID = #{memberid}
+   </select>
+
+
+
+</mapper>  
+  
+  
+  
