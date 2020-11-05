@@ -1,13 +1,13 @@
 # WeSche
-1. 기간 : 2020.08 - 2020.10
-2. **개발 환경**
+### 1. 기간 : 2020.08 - 2020.10
+### 2. **개발 환경**
 - OS : Window OS, MAC OS
 - Language : JAVA, HTML5, CSS3, JS, JQuery, Ajax
 - DB: Oracle Database 11g
 - Server : Apache Tomcat 9.0
 - IDE : Eclipse
 
-3. 구현 기능 
+### 3. 구현 기능 
 ##### 주요 기능
 * 캘린더 
   - 일, 주, 월간 캘린더를 보여줌으로써 더욱 직관적으로 사용
