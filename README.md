@@ -1,5 +1,5 @@
 # WeSche
-### 기간 : 2020.08-2020.10
+### 기간 : 2020.08 - 2020.10
 ### **개발 환경**
 - OS : Window OS, MAC OS
 - Language : JAVA, HTML5, CSS3, JS, JQuery, Ajax
